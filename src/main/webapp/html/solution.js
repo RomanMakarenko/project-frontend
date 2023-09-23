@@ -72,7 +72,7 @@ function fillTable(data) {
                          <td>${record.level}</td>
                          <td>${record.birthday}</td>
                          <td>${record.banned}</td>
-                         <td><img class="edit" src="/img/edit.png" alt="Edit"></td>
+                         <td><img class="edit" id=${record.id} src="/img/edit.png" alt="Edit"></td>
                          <td><img class="delete" id=${record.id} src="/img/delete.png" alt="Delete"></td>
                     </tr>`;
     })
@@ -82,6 +82,22 @@ function fillTable(data) {
     tableBody.insertAdjacentHTML("beforeend", newRow);
 
     handleDeleteActions();
+    handleEditBtnClick();
+}
+
+function handleEditBtnClick() {
+    const editButtons = document.querySelectorAll('.edit');
+    editButtons.forEach(editButton => {
+        editButton.addEventListener("click", function () {
+            let deleteBtn = document.querySelector(`.delete[id="${editButton.id}"]`);
+            let editBtn = document.querySelector(`.edit[id="${editButton.id}"]`);
+            deleteBtn.remove();
+
+            let saveBtn = document.createElement('img');
+            saveBtn.src = '/img/save.png';
+            editButton.replaceWith(saveBtn);
+        });
+    });
 }
 
 function handleDeleteActions() {

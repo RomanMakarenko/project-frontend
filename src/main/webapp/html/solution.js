@@ -250,7 +250,6 @@ function addNewUserActions() {
             'banned': document.querySelector('.bannedDropdown').querySelector('select').value,
             'level': document.querySelector('.addLevel').value,
         }
-        console.log('a === ' + JSON.stringify(userData))
         addRecord(userData);
     });
 }

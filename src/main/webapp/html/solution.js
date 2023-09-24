@@ -3,7 +3,7 @@ let recordsOnPage = 3;
 let pageNumber = 0;
 const raceOptions = ['HUMAN', 'DWARF', 'ELF', 'GIANT', 'ORC', 'TROLL', 'HOBBIT'];
 const professionOptions = ['WARRIOR', 'ROGUE', 'SORCERER', 'CLERIC', 'PALADIN', 'NAZGUL', 'WARLOCK', 'DRUID'];
-const bannedOptions = [true, false];
+const bannedOptions = [false, true];
 
 $(document).ready(function () {
     getRecordsCount();
@@ -12,6 +12,7 @@ $(document).ready(function () {
     prepareRaceList();
     prepareProfessionList();
     prepareBannedList();
+    addNewUserActions();
 });
 
 function getRecordsCount() {
@@ -35,7 +36,7 @@ function deleteRecord(id) {
     $.ajax({
         url: `http://localhost:8090/rest/players/${id}`,
         type: 'DELETE',
-        success: function (data) {
+        success: function () {
             getRecords();
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -50,7 +51,22 @@ function saveUpdatedRecord(id, updatedUserData) {
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(updatedUserData),
-        success: function (data) {
+        success: function () {
+            getRecords();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error('Error request:', errorThrown);
+        }
+    });
+}
+
+function addRecord(updatedUserData) {
+    $.ajax({
+        url: `http://localhost:8090/rest/players`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(updatedUserData),
+        success: function () {
             getRecords();
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -220,4 +236,20 @@ function prepareProfessionList() {
 function prepareBannedList() {
     let labelElement = document.querySelector('.bannedDropdown');
     labelElement.innerHTML =  generateDDOptionsList(bannedOptions, bannedOptions[0], 'bannedAdd');
+}
+
+function addNewUserActions() {
+    const saveButton = document.querySelector('.save');
+    saveButton.addEventListener("click", function () {
+        let userData = {
+            'name': document.querySelector('.addName').value,
+            'title': document.querySelector('.addTitle').value,
+            'race': document.querySelector('.raceDropdown').querySelector('select').value,
+            'profession': document.querySelector('.professionDropdown').querySelector('select').value,
+            'birthday': new Date(document.querySelector('.addDate').value).getTime(),
+            'banned': document.querySelector('.bannedDropdown').querySelector('select').value,
+            'level': document.querySelector('.addLevel').value,
+        }
+        addRecord(userData);
+    });
 }

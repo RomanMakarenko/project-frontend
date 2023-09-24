@@ -1,25 +1,25 @@
 let countOfRecords = 0;
 let recordsOnPage = 3;
 let pageNumber = 0;
-$( document ).ready(function() {
+$(document).ready(function () {
     getRecordsCount();
     handleSelectorOptions();
     getRecords();
 });
 
 function getRecordsCount() {
-    $.get('http://localhost:8090/rest/players/count', function(data) {
+    $.get('http://localhost:8090/rest/players/count', function (data) {
         countOfRecords = data;
         updatePaginationButtons();
-    }).fail(function(jqXHR, textStatus, errorThrown) {
+    }).fail(function (jqXHR, textStatus, errorThrown) {
         console.error('Error request:', errorThrown);
     });
 }
 
 function getRecords() {
-    $.get(`http://localhost:8090/rest/players?pageSize=${recordsOnPage}&pageNumber=${pageNumber}`, function(data) {
+    $.get(`http://localhost:8090/rest/players?pageSize=${recordsOnPage}&pageNumber=${pageNumber}`, function (data) {
         fillTable(data);
-    }).fail(function(jqXHR, textStatus, errorThrown) {
+    }).fail(function (jqXHR, textStatus, errorThrown) {
         console.error('Error request:', errorThrown);
     });
 }
@@ -28,10 +28,10 @@ function deleteRecord(id) {
     $.ajax({
         url: `http://localhost:8090/rest/players/${id}`,
         type: 'DELETE',
-        success: function(data) {
+        success: function (data) {
             getRecords();
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error: function (jqXHR, textStatus, errorThrown) {
             console.error('Error request:', errorThrown);
         }
     });
@@ -53,7 +53,7 @@ function updatePaginationButtons() {
 
 function handleSelectorOptions() {
     const optionSelector = document.querySelector('.records-on-page');
-    optionSelector.addEventListener("change", function() {
+    optionSelector.addEventListener("change", function () {
         updatePaginationButtons();
         getRecords();
     });
@@ -65,13 +65,13 @@ function fillTable(data) {
         newRow +=
             `<tr>
                          <td>${record.id}</td>
-                         <td>${record.name}</td>
-                         <td>${record.title}</td>
-                         <td>${record.race}</td>
-                         <td>${record.profession}</td>
+                         <td class="name" id=${record.id}>${record.name}</td>
+                         <td class="title" id=${record.id}>${record.title}</td>
+                         <td class="race" id=${record.id}>${record.race}</td>
+                         <td class="profession" id=${record.id}>${record.profession}</td>
                          <td>${record.level}</td>
-                         <td>${record.birthday}</td>
-                         <td>${record.banned}</td>
+                         <td>${formatDate(record.birthday)}</td>
+                         <td class="banned" id=${record.id}>${record.banned}</td>
                          <td><img class="edit" id=${record.id} src="/img/edit.png" alt="Edit"></td>
                          <td><img class="delete" id=${record.id} src="/img/delete.png" alt="Delete"></td>
                     </tr>`;
@@ -90,14 +90,59 @@ function handleEditBtnClick() {
     editButtons.forEach(editButton => {
         editButton.addEventListener("click", function () {
             let deleteBtn = document.querySelector(`.delete[id="${editButton.id}"]`);
-            let editBtn = document.querySelector(`.edit[id="${editButton.id}"]`);
             deleteBtn.remove();
-
-            let saveBtn = document.createElement('img');
-            saveBtn.src = '/img/save.png';
-            editButton.replaceWith(saveBtn);
+            openEditMode(editButton);
         });
     });
+}
+
+function openEditMode(editButton) {
+    let saveBtn = document.createElement('img');
+    saveBtn.src = '/img/save.png';
+    saveBtn.id = editButton.id;
+    editButton.replaceWith(saveBtn);
+    let titleRecord = document.querySelector(`.title[id="${editButton.id}"]`);
+    let nameRecord = document.querySelector(`.name[id="${editButton.id}"]`);
+    let raceRecord = document.querySelector(`.race[id="${editButton.id}"]`);
+    let professionRecord = document.querySelector(`.profession[id="${editButton.id}"]`);
+    let bannedRecord = document.querySelector(`.banned[id="${editButton.id}"]`);
+
+    let titleRow = document.createElement('input');
+    titleRow.value = titleRecord.textContent;
+    titleRecord.innerText = '';
+    titleRecord.appendChild(titleRow);
+
+    let nameRow = document.createElement('input');
+    nameRow.value = nameRecord.textContent;
+    nameRecord.innerText = '';
+    nameRecord.appendChild(nameRow);
+
+    const raceOptions = ['HUMAN', 'DWARF', 'ELF', 'GIANT', 'ORC', 'TROLL', 'HOBBIT'];
+    let raceDD = generateDDOptionsList(raceOptions, raceRecord.textContent, 'race');
+    raceRecord.innerHTML = raceDD;
+
+    const professionOptions = ['WARRIOR', 'ROGUE', 'SORCERER', 'CLERIC', 'PALADIN', 'NAZGUL', 'WARLOCK', 'DRUID'];
+    let professionDD = generateDDOptionsList(professionOptions, professionRecord.textContent, 'profession');
+    professionRecord.innerHTML = professionDD;
+
+
+    const activeValue = (bannedRecord.textContent === "true") ? true : false;
+    const bannedOptions = [true, false];
+    let bannedDD = generateDDOptionsList(bannedOptions, activeValue, 'ban');
+    bannedRecord.innerHTML = bannedDD;
+}
+
+function generateDDOptionsList(optionsList, selectedOption, ddName) {
+    let ddOptions = `<select name="${ddName}">`;
+    optionsList.forEach(option => {
+        if (option === selectedOption) {
+            ddOptions += `<option selected value="${option}">${option}</option>`;
+        } else {
+            ddOptions += `<option value="${option}">${option}</option>`;
+        }
+    })
+    ddOptions += '</select>';
+    return ddOptions;
 }
 
 function handleDeleteActions() {
@@ -124,5 +169,13 @@ function markActivePage(recordsCounter) {
             button.classList.add("pressed");
         });
     });
+}
+
+function formatDate(unixTimestamp) {
+    const date = new Date(unixTimestamp);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
 }
 

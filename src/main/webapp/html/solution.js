@@ -1,10 +1,17 @@
 let countOfRecords = 0;
 let recordsOnPage = 3;
 let pageNumber = 0;
+const raceOptions = ['HUMAN', 'DWARF', 'ELF', 'GIANT', 'ORC', 'TROLL', 'HOBBIT'];
+const professionOptions = ['WARRIOR', 'ROGUE', 'SORCERER', 'CLERIC', 'PALADIN', 'NAZGUL', 'WARLOCK', 'DRUID'];
+const bannedOptions = [true, false];
+
 $(document).ready(function () {
     getRecordsCount();
     handleSelectorOptions();
     getRecords();
+    prepareRaceList();
+    prepareProfessionList();
+    prepareBannedList();
 });
 
 function getRecordsCount() {
@@ -132,16 +139,13 @@ function openEditMode(editButton) {
     titleRecord.innerText = '';
     titleRecord.appendChild(titleRow);
 
-    const raceOptions = ['HUMAN', 'DWARF', 'ELF', 'GIANT', 'ORC', 'TROLL', 'HOBBIT'];
     let raceDD = generateDDOptionsList(raceOptions, raceRecord.textContent, 'race');
     raceRecord.innerHTML = raceDD;
 
-    const professionOptions = ['WARRIOR', 'ROGUE', 'SORCERER', 'CLERIC', 'PALADIN', 'NAZGUL', 'WARLOCK', 'DRUID'];
     let professionDD = generateDDOptionsList(professionOptions, professionRecord.textContent, 'profession');
     professionRecord.innerHTML = professionDD;
 
     const activeValue = (bannedRecord.textContent === "true") ? true : false;
-    const bannedOptions = [true, false];
     let bannedDD = generateDDOptionsList(bannedOptions, activeValue, 'ban');
     bannedRecord.innerHTML = bannedDD;
 
@@ -201,4 +205,19 @@ function formatDate(unixTimestamp) {
     const day = String(date.getDate()).padStart(2, '0');
     const year = date.getFullYear();
     return `${month}/${day}/${year}`;
+}
+
+function prepareRaceList() {
+    let labelElement = document.querySelector('.raceDropdown');
+    labelElement.innerHTML =  generateDDOptionsList(raceOptions, raceOptions[0], 'raceAdd');
+}
+
+function prepareProfessionList() {
+    let labelElement = document.querySelector('.professionDropdown');
+    labelElement.innerHTML =  generateDDOptionsList(professionOptions, professionOptions[0], 'professionAdd');
+}
+
+function prepareBannedList() {
+    let labelElement = document.querySelector('.bannedDropdown');
+    labelElement.innerHTML =  generateDDOptionsList(bannedOptions, bannedOptions[0], 'bannedAdd');
 }

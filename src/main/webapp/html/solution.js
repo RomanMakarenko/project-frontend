@@ -37,6 +37,21 @@ function deleteRecord(id) {
     });
 }
 
+function saveUpdatedRecord(id, updatedUserData) {
+    $.ajax({
+        url: `http://localhost:8090/rest/players/${id}`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(updatedUserData),
+        success: function (data) {
+            getRecords();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error('Error request:', errorThrown);
+        }
+    });
+}
+
 function updatePaginationButtons() {
     const optionSelector = document.querySelector('.records-on-page');
     recordsOnPage = optionSelector.value;
@@ -107,15 +122,15 @@ function openEditMode(editButton) {
     let professionRecord = document.querySelector(`.profession[id="${editButton.id}"]`);
     let bannedRecord = document.querySelector(`.banned[id="${editButton.id}"]`);
 
-    let titleRow = document.createElement('input');
-    titleRow.value = titleRecord.textContent;
-    titleRecord.innerText = '';
-    titleRecord.appendChild(titleRow);
-
     let nameRow = document.createElement('input');
     nameRow.value = nameRecord.textContent;
     nameRecord.innerText = '';
     nameRecord.appendChild(nameRow);
+
+    let titleRow = document.createElement('input');
+    titleRow.value = titleRecord.textContent;
+    titleRecord.innerText = '';
+    titleRecord.appendChild(titleRow);
 
     const raceOptions = ['HUMAN', 'DWARF', 'ELF', 'GIANT', 'ORC', 'TROLL', 'HOBBIT'];
     let raceDD = generateDDOptionsList(raceOptions, raceRecord.textContent, 'race');
@@ -125,11 +140,21 @@ function openEditMode(editButton) {
     let professionDD = generateDDOptionsList(professionOptions, professionRecord.textContent, 'profession');
     professionRecord.innerHTML = professionDD;
 
-
     const activeValue = (bannedRecord.textContent === "true") ? true : false;
     const bannedOptions = [true, false];
     let bannedDD = generateDDOptionsList(bannedOptions, activeValue, 'ban');
     bannedRecord.innerHTML = bannedDD;
+
+    saveBtn.addEventListener("click", function () {
+        let updatedUserData = {
+            'name': nameRow.value,
+            'title': titleRow.value,
+            'race': raceRecord.querySelector('select').value,
+            'profession': professionRecord.querySelector('select').value,
+            'banned': bannedRecord.querySelector('select').value,
+        }
+        saveUpdatedRecord(editButton.id, updatedUserData);
+    });
 }
 
 function generateDDOptionsList(optionsList, selectedOption, ddName) {
@@ -156,7 +181,6 @@ function handleDeleteActions() {
 
 function markActivePage(recordsCounter) {
     const paginationButtons = recordsCounter.querySelectorAll('button');
-
     paginationButtons.forEach(button => {
         button.addEventListener("click", function () {
             pageNumber = button.value - 1;
@@ -178,4 +202,3 @@ function formatDate(unixTimestamp) {
     const year = date.getFullYear();
     return `${month}/${day}/${year}`;
 }
-
